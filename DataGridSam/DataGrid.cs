@@ -30,25 +30,19 @@ namespace DataGridSam
 
             // Scroll (1)
             mainScroll = new ScrollGrid();
+            
+            // Body Grid (2)
+            bodyGrid = new GridBody(this);
+            
+            mainScroll.Content = bodyGrid;
             SetRow(mainScroll, 1);
             Children.Add(mainScroll);
 
-            // Body Grid (2)
-            bodyGrid = new Grid();
-            bodyGrid.VerticalOptions = LayoutOptions.Start;
-            bodyGrid.RowSpacing = 0;
-            bodyGrid.RowDefinitions = new RowDefinitionCollection
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-            };
-            mainScroll.Content = bodyGrid;
-
             // Stack list (3)
-            stackList = new StackList();
-            stackList.Spacing = 0;
-            stackList.DataGrid = this;
-            bodyGrid.Children.Add(stackList);
+            //stackList = new StackList();
+            //stackList.Spacing = 0;
+            //stackList.DataGrid = this;
+            //bodyGrid.Children.Add(stackList);
 
 
             // Mask Grid (3)
@@ -57,7 +51,7 @@ namespace DataGridSam
             maskGrid.ColumnSpacing = 0;
             maskGrid.BackgroundColor = Color.Transparent;
             maskGrid.InputTransparent = true;
-            maskGrid.SetBinding(Grid.IsVisibleProperty, new Binding(nameof(stackList.HasItems), source: stackList));
+            //maskGrid.SetBinding(Grid.IsVisibleProperty, new Binding(nameof(stackList.HasItems), source: stackList));
 
             bodyGrid.Children.Add(maskGrid);
 
@@ -124,7 +118,7 @@ namespace DataGridSam
                 {
                     DataGrid self = thisObject as DataGrid;
 
-                    self.stackList.ItemsSource = newValue as ICollection;
+                    self.bodyGrid.ItemsSource = newValue as ICollection;
                 });
         public IEnumerable ItemsSource
         {

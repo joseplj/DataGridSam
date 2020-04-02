@@ -48,11 +48,12 @@ namespace DataGridSam.Utils
 
             // Bottom line
             bottom = new BoxView();
-            bottom.VerticalOptions = LayoutOptions.End;
+            bottom.InputTransparent = true;
+            bottom.VerticalOptions = LayoutOptions.EndAndExpand;
             bottom.HorizontalOptions = LayoutOptions.FillAndExpand;
             bottom.SetBinding(BoxView.HeightRequestProperty, new Binding(nameof(host.BorderWidth), source: host));
             bottom.SetBinding(BoxView.BackgroundColorProperty, new Binding(nameof(host.BorderColor), source: host));
-            Grid.SetRow(bottom, 1);
+            //Grid.SetRow(bottom, 1);
 
             // Wrapp borders
             leftScroll = new BoxView();
@@ -80,7 +81,7 @@ namespace DataGridSam.Utils
                 host.maskGrid.Children.Add(leftScroll);
                 host.maskGrid.Children.Add(rightScroll);
                 host.bodyGrid.Children.Add(bottom);
-                host.stackList.SizeChanged += host.CheckWrapperBottomVisible;
+                host.bodyGrid.SizeChanged += host.CheckWrapperBottomVisible;
                 host.mainScroll.SizeChanged += host.CheckWrapperBottomVisible;
 
                 Grid.SetColumn(rightScroll, host.Columns?.Count-1 ?? 0);
@@ -94,7 +95,7 @@ namespace DataGridSam.Utils
                 host.bodyGrid.Children.Remove(bottom);
                 host.maskGrid.Children.Remove(leftScroll);
                 host.maskGrid.Children.Remove(rightScroll);
-                host.stackList.SizeChanged -= host.CheckWrapperBottomVisible;
+                host.bodyGrid.SizeChanged -= host.CheckWrapperBottomVisible;
                 host.mainScroll.SizeChanged -= host.CheckWrapperBottomVisible;
             }
         }

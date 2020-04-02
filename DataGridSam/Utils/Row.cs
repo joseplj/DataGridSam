@@ -29,13 +29,13 @@ namespace DataGridSam.Utils
 
             RowSpacing = 0;
             ColumnSpacing = 0;
-            //IsClippedToBounds = true;
+            IsClippedToBounds = true;
             BackgroundColor = Color.Transparent;
 
             RowDefinitions = new RowDefinitionCollection
             {
-                new RowDefinition { Height = GridLength.Star },
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = new GridLength(DataGrid.BorderWidth) },
             };
 
             // Triggers event
@@ -51,9 +51,11 @@ namespace DataGridSam.Utils
             int cellsCount = 0;
             foreach (var column in DataGrid.Columns)
             {
+                var cell = new GridCell { Column = column };
                 ColumnDefinitions.Add(new ColumnDefinition() { Width = column.CalcWidth });
 
-                var cell = new GridCell { Column = column };
+                // Detect auto number cell
+                cell.AutoNumber = column.AutoNumber;
 
                 // Create custom template
                 if (column.CellTemplate != null)
@@ -83,19 +85,16 @@ namespace DataGridSam.Utils
                         VerticalOptions = LayoutOptions.FillAndExpand,
                     };
 
-                    if (column.PropertyName != null)
+                    if (column.PropertyName != null && cell.AutoNumber == Enums.AutoNumberType.None)
                         label.SetBinding(Label.TextProperty, new Binding(
-                            column.PropertyName, 
+                            column.PropertyName,
                             BindingMode.Default,
-                            stringFormat: column.StringFormat, 
+                            stringFormat: column.StringFormat,
                             source: context));
 
                     cell.View = label;
-
                 }
 
-                // Detect auto number cell
-                cell.AutoNumber = column.AutoNumber;
 
                 SetColumn(cell.View, cellsCount);
                 SetRow(cell.View, 0);
@@ -108,7 +107,6 @@ namespace DataGridSam.Utils
             // Create horizontal line table
             line = CreateHorizontalLine();
             SetRow(line, 1);
-            SetColumn(line, 0);
             SetColumnSpan(line, cellsCount);
             Children.Add(line);
 
@@ -277,7 +275,6 @@ namespace DataGridSam.Utils
             }
         }
 
-
         private BoxView CreateHorizontalLine()
         {
             var line = new BoxView()
@@ -285,7 +282,6 @@ namespace DataGridSam.Utils
                 BackgroundColor = DataGrid.BorderColor,
                 VerticalOptions = LayoutOptions.FillAndExpand,
                 HorizontalOptions = LayoutOptions.FillAndExpand,
-                HeightRequest = DataGrid.BorderWidth,
             };
             return line;
         }
@@ -301,7 +297,6 @@ namespace DataGridSam.Utils
             };
             return line;
         }
-
 
         private void MergeVisual(Label label, params VisualCollector[] styles)
         {

@@ -28,7 +28,7 @@ namespace DataGridSam
         /// <summary>
         /// Main GUI component that display rows
         /// </summary>
-        internal StackList stackList;
+        //internal StackList stackList;
 
         /// <summary>
         /// Heads
@@ -36,9 +36,9 @@ namespace DataGridSam
         internal Grid headGrid;
 
         /// <summary>
-        /// Contains: stackList, maskGrid
+        /// Contains: maskGrid
         /// </summary>
-        internal Grid bodyGrid;
+        internal GridBody bodyGrid;
 
         /// <summary>
         /// Group of BoxViews imitate wrapper (for max FPS)

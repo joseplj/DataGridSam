@@ -124,9 +124,8 @@ namespace DataGridSam
             SolveWidth(maskGrid?.ColumnDefinitions[i], isVisible);
             SolveWidth(maskHeadGrid?.ColumnDefinitions[i], isVisible);
                 
-            foreach (var item in stackList.Children)
+            foreach (var row in bodyGrid.Rows)
             {
-                var row = item as Row;
                 row.cells[i].View.IsVisible = isVisible;
                 SolveWidth(row.ColumnDefinitions[i], isVisible);
             }
@@ -246,7 +245,7 @@ namespace DataGridSam
 
         internal void CheckWrapperBottomVisible(object obj, EventArgs e)
         {
-            if (mainScroll.Height > stackList.Height)
+            if (mainScroll.Height > bodyGrid.Height)
             {
                 wrapper.absoluteBottom.IsVisible = false;
             }
@@ -282,30 +281,28 @@ namespace DataGridSam
 
         private void OnButtonLatestClicked(object sender, EventArgs e)
         {
-            stackList.RedrawForPage(PaginationItemCount, selectPage: PaginationCurrentPage-1);
-            mainScroll.ScrollToAsync(0, stackList.Height, false);
+            //stackList.RedrawForPage(PaginationItemCount, selectPage: PaginationCurrentPage-1);
+            //mainScroll.ScrollToAsync(0, stackList.Height, false);
         }
 
         private void OnButtonNextClicked(object sender, EventArgs e)
         {
-            stackList.RedrawForPage(PaginationItemCount, selectPage: PaginationCurrentPage+1);
-            mainScroll.ScrollToAsync(0, 0, false);
+            //stackList.RedrawForPage(PaginationItemCount, selectPage: PaginationCurrentPage+1);
+            //mainScroll.ScrollToAsync(0, 0, false);
         }
 
         private void UpdateTapCommand(ICommand command)
         {
-            foreach (var item in stackList.Children)
+            foreach (var row in bodyGrid.Rows)
             {
-                var row = item as Row;
                 DataGridSam.Platform.Touch.SetTap(row, command);
             }
         }
 
         private void UpdateLongTapCommand(ICommand command)
         {
-            foreach (var item in stackList.Children)
+            foreach (var row in bodyGrid.Rows)
             {
-                var row = item as Row;
                 DataGridSam.Platform.Touch.SetLongTap(row, command);
             }
         }
@@ -323,16 +320,16 @@ namespace DataGridSam
 
                 self.SelectedRow = null;
             }
-            else if (self.stackList.ItemsSource is IList list)
+            else if (self.bodyGrid.ItemsSource is IList list)
             {
                 var match = list.IndexOf(n);
 
                 // Without pagination
                 if (self.PaginationItemCount == 0)
                 {
-                    if (match >= 0 && self.stackList.Children.Count > 0)
+                    if (match >= 0 && self.bodyGrid.Rows.Count > 0)
                     {
-                        var row = (Row)self.stackList.Children[match];
+                        var row = (Row)self.bodyGrid.Rows[match];
                         row.isSelected = true;
                         row.UpdateStyle();
 
@@ -348,12 +345,12 @@ namespace DataGridSam
                     if (dif >= 0 && dif <= pageStart + self.PaginationItemCount - 1)
                     {
                         // Safe
-                        if (dif >= self.stackList.Children.Count)
+                        if (dif >= self.bodyGrid.Rows.Count)
                         {
 
                         }
 
-                        var row = (Row)self.stackList.Children[dif];
+                        var row = (Row)self.bodyGrid.Rows[dif];
                         row.isSelected = true;
                         row.UpdateStyle();
 
