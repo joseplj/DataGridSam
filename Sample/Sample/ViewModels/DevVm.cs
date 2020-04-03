@@ -57,6 +57,7 @@ namespace Sample.ViewModels
                     lastWare.IsSelected = false;
                 lastWare = ware;
                 lastWare.IsSelected = true;
+                ware.Name += " SELECTED ";
 
                 int pos = Items.IndexOf(ware);
                 View.DisplayAlert("Select", $"You are selected {pos} {ware.Name}", "OK");

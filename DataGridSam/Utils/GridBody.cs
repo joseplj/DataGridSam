@@ -18,7 +18,7 @@ namespace DataGridSam.Utils
 
         public GridBody(DataGrid host)
         {
-            this.
+            // TODO
             BackgroundColor = Color.Red;
             DataGrid = host;
             Rows = new List<Row>();

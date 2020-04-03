@@ -11,6 +11,7 @@ namespace DataGridSam.Utils
         public TouchBox(Row row)
         {
             Row = row;
+            HeightRequest = 1.0;
         }
     }
 }

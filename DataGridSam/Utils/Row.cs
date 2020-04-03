@@ -40,7 +40,7 @@ namespace DataGridSam.Utils
                 model.PropertyChanged += (obj, e) => RowTrigger.SetTriggerStyle(this, e.PropertyName);
 
             // Create touch container
-            touchContainer = CreateTouchContainer();
+            touchContainer = new TouchBox(this);
             Grid.SetColumnSpan(touchContainer, DataGrid.Columns.Count);
             Grid.SetRow(touchContainer, Index);
             GridBody.Children.Add(touchContainer);
@@ -80,15 +80,16 @@ namespace DataGridSam.Utils
                 // Create standart cell
                 else
                 {
-                    var label = new Label
+                    var label = new LabelExt(this, cell)
                     {
                         IsVisible = column.IsVisible,
                         Margin = DataGrid.CellPadding,
-                        InputTransparent = true,
-                        //HorizontalOptions = LayoutOptions.FillAndExpand,
-                        //VerticalOptions = LayoutOptions.FillAndExpand,
+                        //VerticalOptions = LayoutOptions.StartAndExpand,
+                        HorizontalOptions = LayoutOptions.FillAndExpand,
+                        VerticalOptions = LayoutOptions.FillAndExpand,
                     };
 
+                    // Set binding text with ItemsSource model
                     if (column.PropertyName != null && cell.AutoNumber == Enums.AutoNumberType.None)
                         label.SetBinding(Label.TextProperty, new Binding(
                             column.PropertyName,
@@ -100,7 +101,7 @@ namespace DataGridSam.Utils
                 }
 
                 // event size
-                cell.InitSizeChanged();
+                //cell.InitSizeChanged();
 
                 GridBody.Children.Add(cell.View, i, Index);
                 i++;
@@ -111,8 +112,6 @@ namespace DataGridSam.Utils
             Grid.SetColumnSpan(line, DataGrid.Columns.Count);
             Grid.SetRow(line, Index);
             GridBody.Children.Add(line);
-
-            //
 
             // Add tap system event
             Touch.SetSelect(touchContainer, new Command(ActionRowSelect));
@@ -324,12 +323,6 @@ namespace DataGridSam.Utils
                 Grid.SetRow(cell.View, index);
         }
 
-        private BoxView CreateTouchContainer()
-        {
-            var box = new TouchBox(this);
-            return box;
-        }
-
         private BoxView CreateHorizontalLine()
         {
             var line = new BoxView()
@@ -350,6 +343,7 @@ namespace DataGridSam.Utils
                 BackgroundColor = Color.Transparent,
                 VerticalOptions = LayoutOptions.Fill,
                 HorizontalOptions = LayoutOptions.Fill,
+                HeightRequest = 1.0,
                 InputTransparent = true,
             };
             return line;

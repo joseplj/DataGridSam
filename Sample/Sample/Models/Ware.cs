@@ -44,8 +44,9 @@ namespace Sample.Models
                     return false;
             }
         }
-
-        public string NameView => (IsSelected) ? $"{Name} SELECTED" : Name;
+        
+        // TODO public string NameView => (IsSelected) ? $"{Name} SELECTED" : Name;
+        public string NameView => $"{Name}";
 
         private bool isSelected;
         public bool IsSelected { get => isSelected;
@@ -57,7 +58,15 @@ namespace Sample.Models
         #endregion
 
         public int Pos { get; set; }
-        public string Name { get; set; }
+
+        private string name;
+        public string Name {
+            get => name;
+            set {
+                name = value;
+                OnPropertyChanged(nameof(NameView));
+            }
+        }
         public float Price { get; set; }
 
         private float need;
