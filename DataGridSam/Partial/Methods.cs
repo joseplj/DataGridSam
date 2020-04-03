@@ -124,7 +124,7 @@ namespace DataGridSam
             SolveWidth(maskGrid?.ColumnDefinitions[i], isVisible);
             SolveWidth(maskHeadGrid?.ColumnDefinitions[i], isVisible);
                 
-            foreach (var item in stackList.Children)
+            foreach (var item in listView.Child)
             {
                 var row = item as Row;
                 row.cells[i].View.IsVisible = isVisible;

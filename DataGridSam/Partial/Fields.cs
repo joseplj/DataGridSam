@@ -1,4 +1,5 @@
-﻿using DataGridSam.Enums;
+﻿using DataGridSam.Elements;
+using DataGridSam.Enums;
 using DataGridSam.Utils;
 using System;
 using System.Collections.Generic;
@@ -10,12 +11,6 @@ namespace DataGridSam
     public partial class DataGrid
     {
         /// <summary>
-        /// Main scroll. Contains: bodyGrid, mainStackLayout 
-        /// (if enable pagination)
-        /// </summary>
-        internal ScrollView mainScroll;
-
-        /// <summary>
         /// For imitate column borders (BODY)
         /// </summary>
         internal Grid maskGrid;
@@ -25,10 +20,13 @@ namespace DataGridSam
         /// </summary>
         internal Grid maskHeadGrid;
 
+        //[Obsolete("Use ListViewExt")]
         /// <summary>
         /// Main GUI component that display rows
         /// </summary>
-        internal StackList stackList;
+        //internal StackList stackList;
+
+        internal ListViewExt listView;
 
         /// <summary>
         /// Heads

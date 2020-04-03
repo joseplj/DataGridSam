@@ -1,4 +1,5 @@
-﻿using DataGridSam.Utils;
+﻿using DataGridSam.Elements;
+using DataGridSam.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,15 +26,10 @@ namespace DataGridSam
             headGrid.ColumnSpacing = 0;
             headGrid.RowSpacing = 0;
             headGrid.SetBinding(Grid.BackgroundColorProperty, new Binding(nameof(HeaderBackgroundColor), source: this));
-            SetRow(headGrid, 0);
-            Children.Add(headGrid);
+            Children.Add(headGrid, 0, 0);
 
-            // Scroll (1)
-            mainScroll = new ScrollGrid();
-            SetRow(mainScroll, 1);
-            Children.Add(mainScroll);
 
-            // Body Grid (2)
+            // Body Grid (1)
             bodyGrid = new Grid();
             bodyGrid.VerticalOptions = LayoutOptions.Start;
             bodyGrid.RowSpacing = 0;
@@ -42,22 +38,20 @@ namespace DataGridSam
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
             };
-            mainScroll.Content = bodyGrid;
+            Children.Add(bodyGrid, 0, 1);
 
-            // Stack list (3)
-            stackList = new StackList();
-            stackList.Spacing = 0;
-            stackList.DataGrid = this;
-            bodyGrid.Children.Add(stackList);
+            // Stack list (2)
+            listView = new ListViewExt();
+            bodyGrid.Children.Add(listView);
 
 
-            // Mask Grid (3)
+            // Mask Grid (2)
             maskGrid = new Grid();
             maskGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
             maskGrid.ColumnSpacing = 0;
             maskGrid.BackgroundColor = Color.Transparent;
             maskGrid.InputTransparent = true;
-            maskGrid.SetBinding(Grid.IsVisibleProperty, new Binding(nameof(stackList.HasItems), source: stackList));
+            //maskGrid.SetBinding(Grid.IsVisibleProperty, new Binding(nameof(stackList.HasItems), source: stackList));
 
             bodyGrid.Children.Add(maskGrid);
 
@@ -124,7 +118,7 @@ namespace DataGridSam
                 {
                     DataGrid self = thisObject as DataGrid;
 
-                    self.stackList.ItemsSource = newValue as ICollection;
+                    self.listView.ItemsSource = newValue as ICollection;
                 });
         public IEnumerable ItemsSource
         {

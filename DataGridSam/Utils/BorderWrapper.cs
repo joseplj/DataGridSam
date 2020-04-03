@@ -80,8 +80,9 @@ namespace DataGridSam.Utils
                 host.maskGrid.Children.Add(leftScroll);
                 host.maskGrid.Children.Add(rightScroll);
                 host.bodyGrid.Children.Add(bottom);
-                host.stackList.SizeChanged += host.CheckWrapperBottomVisible;
-                host.mainScroll.SizeChanged += host.CheckWrapperBottomVisible;
+                // TODO Border size update
+                //host.stackList.SizeChanged += host.CheckWrapperBottomVisible;
+                //host.mainScroll.SizeChanged += host.CheckWrapperBottomVisible;
 
                 Grid.SetColumn(rightScroll, host.Columns?.Count-1 ?? 0);
             }
@@ -94,8 +95,9 @@ namespace DataGridSam.Utils
                 host.bodyGrid.Children.Remove(bottom);
                 host.maskGrid.Children.Remove(leftScroll);
                 host.maskGrid.Children.Remove(rightScroll);
-                host.stackList.SizeChanged -= host.CheckWrapperBottomVisible;
-                host.mainScroll.SizeChanged -= host.CheckWrapperBottomVisible;
+                // TODO Border size update
+                //host.stackList.SizeChanged -= host.CheckWrapperBottomVisible;
+                //host.mainScroll.SizeChanged -= host.CheckWrapperBottomVisible;
             }
         }
     }
