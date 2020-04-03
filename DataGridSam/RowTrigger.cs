@@ -203,7 +203,7 @@ namespace DataGridSam
                 if (propName == trigger.PropertyTrigger)
                 {
                     anyTrigger = trigger;
-                    if (trigger.CheckTriggerActivated(row.BindingContext))
+                    if (trigger.CheckTriggerActivated(row.Context))
                     {
                         isTriggerActive = true;
                         if (!isNeedUpdate)
@@ -240,7 +240,7 @@ namespace DataGridSam
         {
             foreach (var trigger in row.DataGrid.RowTriggers)
             {
-                if (trigger.CheckTriggerActivated(row.BindingContext))
+                if (trigger.CheckTriggerActivated(row.Context))
                 {
                     return trigger;
                 }

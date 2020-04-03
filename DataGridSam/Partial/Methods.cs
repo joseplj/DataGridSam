@@ -25,28 +25,7 @@ namespace DataGridSam
         private void UpdateBodyMaskBorders()
         {
             // Clear GUI mask
-            maskGrid.Children.Clear();
-            maskGrid.ColumnDefinitions.Clear();
-
-            if (Columns == null)
-                return;
-
-            int i = 0;
-            foreach (var col in Columns)
-            {
-                // Create vertical borders (Table)
-                maskGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = col.CalcWidth });
-
-                if (i < Columns.Count - 1)
-                {
-                    var line = CreateColumnLine();
-                    Grid.SetColumn(line, i);
-                    Grid.SetRow(line, 0);
-                    maskGrid.Children.Add(line);
-                }
-
-                i++;
-            }
+            bodyGrid.Init();
         }
 
         private void UpdateHeaderCells()
@@ -121,13 +100,15 @@ namespace DataGridSam
             col.HeaderWrapper.IsVisible = isVisible;
 
             SolveWidth(headGrid?.ColumnDefinitions[i], isVisible);
-            SolveWidth(maskGrid?.ColumnDefinitions[i], isVisible);
+            SolveWidth(bodyGrid?.ColumnDefinitions[i], isVisible);
+            SolveWidth(bodyGrid?.Mask?.ColumnDefinitions[i], isVisible);
             SolveWidth(maskHeadGrid?.ColumnDefinitions[i], isVisible);
                 
             foreach (var row in bodyGrid.Rows)
             {
                 row.cells[i].View.IsVisible = isVisible;
-                SolveWidth(row.ColumnDefinitions[i], isVisible);
+                // TODO fix column hide
+                //SolveWidth(row.ColumnDefinitions[i], isVisible);
             }
         }
 
@@ -295,7 +276,7 @@ namespace DataGridSam
         {
             foreach (var row in bodyGrid.Rows)
             {
-                DataGridSam.Platform.Touch.SetTap(row, command);
+                DataGridSam.Platform.Touch.SetTap(row.touchContainer, command);
             }
         }
 
@@ -303,7 +284,7 @@ namespace DataGridSam
         {
             foreach (var row in bodyGrid.Rows)
             {
-                DataGridSam.Platform.Touch.SetLongTap(row, command);
+                DataGridSam.Platform.Touch.SetLongTap(row.touchContainer, command);
             }
         }
 
@@ -315,7 +296,7 @@ namespace DataGridSam
 
             if (n == null && lastRow != null)
             {
-                lastRow.isSelected = false;
+                lastRow.IsSelected = false;
                 lastRow.UpdateStyle();
 
                 self.SelectedRow = null;
@@ -330,7 +311,7 @@ namespace DataGridSam
                     if (match >= 0 && self.bodyGrid.Rows.Count > 0)
                     {
                         var row = (Row)self.bodyGrid.Rows[match];
-                        row.isSelected = true;
+                        row.IsSelected = true;
                         row.UpdateStyle();
 
                         self.SelectedRow = row;
@@ -351,7 +332,7 @@ namespace DataGridSam
                         }
 
                         var row = (Row)self.bodyGrid.Rows[dif];
-                        row.isSelected = true;
+                        row.IsSelected = true;
                         row.UpdateStyle();
 
                         self.SelectedRow = row;

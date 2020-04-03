@@ -38,24 +38,6 @@ namespace DataGridSam
             SetRow(mainScroll, 1);
             Children.Add(mainScroll);
 
-            // Stack list (3)
-            //stackList = new StackList();
-            //stackList.Spacing = 0;
-            //stackList.DataGrid = this;
-            //bodyGrid.Children.Add(stackList);
-
-
-            // Mask Grid (3)
-            maskGrid = new Grid();
-            maskGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-            maskGrid.ColumnSpacing = 0;
-            maskGrid.BackgroundColor = Color.Transparent;
-            maskGrid.InputTransparent = true;
-            //maskGrid.SetBinding(Grid.IsVisibleProperty, new Binding(nameof(stackList.HasItems), source: stackList));
-
-            bodyGrid.Children.Add(maskGrid);
-
-
             // Wrapper (1)
             wrapper = new BorderWrapper(this);
         }

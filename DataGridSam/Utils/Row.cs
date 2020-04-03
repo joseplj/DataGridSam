@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Input;
 //using TouchSam;
 //using DataGridSam.Platform;
@@ -10,49 +11,52 @@ using Xamarin.Forms;
 namespace DataGridSam.Utils
 {
     [Xamarin.Forms.Internals.Preserve(AllMembers = true)]
-    internal sealed class Row : Grid
+    public sealed class Row
     {
+        public double Height { get; private set; }
+        public int Index { get; private set; }
+        public bool IsSelected { get; internal set; }
+
+        public readonly object Context;
         internal readonly DataGrid DataGrid;
-        internal int index;
-        internal BoxView selectionContainer;
-        internal BoxView line;
-        internal bool isSelected;
-        internal List<GridCell> cells = new List<GridCell>();
+        internal readonly GridBody GridBody;
+
+        internal readonly List<GridCell> cells = new List<GridCell>();
+        internal readonly BoxView touchContainer;
+        internal readonly BoxView selectionContainer;
+        internal readonly BoxView line;
         internal RowTrigger enableTrigger;
-        internal bool isStyleDefault = true;
 
-        public Row(object context, DataGrid host, int id, int itemsCount)
+
+        public Row(object context, GridBody host, int id, int itemsCount)
         {
-            BindingContext = context;
-            DataGrid = host;
-            index = id;
-
-            RowSpacing = 0;
-            ColumnSpacing = 0;
-            IsClippedToBounds = true;
-            BackgroundColor = Color.Transparent;
-
-            RowDefinitions = new RowDefinitionCollection
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = new GridLength(DataGrid.BorderWidth) },
-            };
+            Context = context;
+            GridBody = host;
+            DataGrid = host.DataGrid;
+            Index = id;
 
             // Triggers event
-            if (context is INotifyPropertyChanged model)
+            if (Context is INotifyPropertyChanged model)
                 model.PropertyChanged += (obj, e) => RowTrigger.SetTriggerStyle(this, e.PropertyName);
+
+            // Create touch container
+            touchContainer = CreateTouchContainer();
+            Grid.SetColumnSpan(touchContainer, DataGrid.Columns.Count);
+            Grid.SetRow(touchContainer, Index);
+            GridBody.Children.Add(touchContainer);
 
             // Create selected container
             selectionContainer = CreateSelectionContainer();
-            SetColumnSpan(selectionContainer, DataGrid.Columns.Count);
-            Children.Add(selectionContainer);
+            Grid.SetColumnSpan(selectionContainer, DataGrid.Columns.Count);
+            Grid.SetRow(selectionContainer, Index);
+            GridBody.Children.Add(selectionContainer);
 
             // Init cells
-            int cellsCount = 0;
+            int i = 0;
             foreach (var column in DataGrid.Columns)
             {
-                var cell = new GridCell { Column = column };
-                ColumnDefinitions.Add(new ColumnDefinition() { Width = column.CalcWidth });
+                var cell = new GridCell(this, column);
+                cells.Add(cell);
 
                 // Detect auto number cell
                 cell.AutoNumber = column.AutoNumber;
@@ -63,7 +67,7 @@ namespace DataGridSam.Utils
                     cell.View = column.CellTemplate.CreateContent() as View;
                     cell.View.IsVisible = column.IsVisible;
                     cell.View.InputTransparent = true;
-                    cell.View.BindingContext = context;
+                    cell.View.BindingContext = Context;
                     cell.IsCustomTemplate = true;
 
                     if (cell.View is Layout layout)
@@ -81,8 +85,8 @@ namespace DataGridSam.Utils
                         IsVisible = column.IsVisible,
                         Margin = DataGrid.CellPadding,
                         InputTransparent = true,
-                        HorizontalOptions = LayoutOptions.FillAndExpand,
-                        VerticalOptions = LayoutOptions.FillAndExpand,
+                        //HorizontalOptions = LayoutOptions.FillAndExpand,
+                        //VerticalOptions = LayoutOptions.FillAndExpand,
                     };
 
                     if (column.PropertyName != null && cell.AutoNumber == Enums.AutoNumberType.None)
@@ -90,46 +94,46 @@ namespace DataGridSam.Utils
                             column.PropertyName,
                             BindingMode.Default,
                             stringFormat: column.StringFormat,
-                            source: context));
+                            source: Context));
 
                     cell.View = label;
                 }
 
+                // event size
+                cell.InitSizeChanged();
 
-                SetColumn(cell.View, cellsCount);
-                SetRow(cell.View, 0);
-                Children.Add(cell.View);
-                cells.Add(cell);
-
-                cellsCount++;
+                GridBody.Children.Add(cell.View, i, Index);
+                i++;
             }
 
             // Create horizontal line table
             line = CreateHorizontalLine();
-            SetRow(line, 1);
-            SetColumnSpan(line, cellsCount);
-            Children.Add(line);
+            Grid.SetColumnSpan(line, DataGrid.Columns.Count);
+            Grid.SetRow(line, Index);
+            GridBody.Children.Add(line);
+
+            //
 
             // Add tap system event
-            Touch.SetSelect(this, new Command(ActionRowSelect));
+            Touch.SetSelect(touchContainer, new Command(ActionRowSelect));
 
             if (DataGrid.TapColor != Color.Default)
-                Touch.SetColor(this, DataGrid.TapColor);
+                Touch.SetColor(touchContainer, DataGrid.TapColor);
 
             if (DataGrid.CommandSelectedItem != null)
-                Touch.SetTap(this, DataGrid.CommandSelectedItem);
+                Touch.SetTap(touchContainer, DataGrid.CommandSelectedItem);
 
             if (DataGrid.CommandLongTapItem != null)
-                Touch.SetLongTap(this, DataGrid.CommandLongTapItem);
+                Touch.SetLongTap(touchContainer, DataGrid.CommandLongTapItem);
 
             // Auto number
             if (DataGrid.IsAutoNumberCalc)
-                UpdateAutoNumeric(index + 1, itemsCount);
+                UpdateAutoNumeric(Index + 1, itemsCount);
 
             // Started find FIRST active trigger
             if (this.DataGrid.RowTriggers.Count > 0)
                 foreach (var trigg in this.DataGrid.RowTriggers)
-                    if (trigg.CheckTriggerActivated(BindingContext))
+                    if (trigg.CheckTriggerActivated(Context))
                     {
                         this.enableTrigger = trigg;
                         break;
@@ -137,6 +141,43 @@ namespace DataGridSam.Utils
 
             // Render style
             UpdateStyle();
+        }
+
+        internal void SolveSizeRow(GridCell cell, double height)
+        {
+            if (height == Height)
+                return;
+
+            foreach (var c in cells)
+            {
+                if (Height > c.View.Height)
+                    height = c.View.Height;
+            }
+
+            Height = height;
+            if (Height >= 0)
+            {
+                double add = DataGrid.CellPadding.Bottom + DataGrid.CellPadding.Top;
+                cell.IsSizeDone = false;
+                //GridBody.RowDefinitions[Index] = new RowDefinition { Height = new GridLength(Height) };
+                GridBody.RowDefinitions[Index].Height = new GridLength(Height + add);
+            }
+        }
+
+
+        internal void Remove()
+        {
+            GridBody.RowDefinitions.Remove(GridBody.RowDefinitions.LastOrDefault());
+            
+            GridBody.Children.Remove(line);
+            GridBody.Children.Remove(touchContainer);
+            GridBody.Children.Remove(selectionContainer);
+            foreach (var cell in cells)
+            {
+                GridBody.Children.Remove(cell.View);
+            }
+
+            GridBody.Rows.Remove(this);
         }
 
         private void ActionRowSelect(object param)
@@ -147,7 +188,7 @@ namespace DataGridSam.Utils
             // GUI Unselected last row
             if (lastTapped != null && lastTapped != rowTapped)
             {
-                lastTapped.isSelected = false;
+                lastTapped.IsSelected = false;
                 lastTapped.UpdateStyle();
             }
 
@@ -155,9 +196,9 @@ namespace DataGridSam.Utils
             if (lastTapped != rowTapped)
             {
                 DataGrid.SelectedRow = rowTapped;
-                DataGrid.SelectedItem = BindingContext;
+                DataGrid.SelectedItem = Context;
 
-                rowTapped.isSelected = true;
+                rowTapped.IsSelected = true;
                 rowTapped.UpdateStyle();
             }
         }
@@ -165,7 +206,7 @@ namespace DataGridSam.Utils
         internal void UpdateStyle()
         {
             // Selected
-            if (isSelected)
+            if (IsSelected)
             {
                 var color = ValueSelector.GetSelectedColor(
                     DataGrid.VisualSelectedRowFromStyle.BackgroundColor,
@@ -182,7 +223,7 @@ namespace DataGridSam.Utils
             if (enableTrigger != null)
             {
                 // row background
-                BackgroundColor = ValueSelector.GetBackgroundColor(
+                touchContainer.BackgroundColor = ValueSelector.GetBackgroundColor(
                     enableTrigger.VisualContainerStyle.BackgroundColor,
                     enableTrigger.VisualContainer.BackgroundColor,
 
@@ -191,7 +232,7 @@ namespace DataGridSam.Utils
             }
             else
             {
-                BackgroundColor = ValueSelector.GetBackgroundColor(
+                touchContainer.BackgroundColor = ValueSelector.GetBackgroundColor(
                     DataGrid.VisualRowsFromStyle.BackgroundColor,
                     DataGrid.VisualRows.BackgroundColor);
             }
@@ -206,7 +247,7 @@ namespace DataGridSam.Utils
                 if (cell.IsCustomTemplate)
                     continue;
 
-                if (isSelected)
+                if (IsSelected)
                 {
                     // SELECT
                     if (enableTrigger == null)
@@ -269,10 +310,24 @@ namespace DataGridSam.Utils
                     case Enums.AutoNumberType.Down:
                         cell.Label.Text = num.ToString(cell.Column.StringFormat);
                         break;
-                    //default:
-                    //    break;
                 }
             }
+        }
+
+        internal void UpdatePosition(int index)
+        {
+            Grid.SetRow(line, index);
+            Grid.SetRow(touchContainer, index);
+            Grid.SetRow(selectionContainer, index);
+
+            foreach (var cell in cells)
+                Grid.SetRow(cell.View, index);
+        }
+
+        private BoxView CreateTouchContainer()
+        {
+            var box = new TouchBox(this);
+            return box;
         }
 
         private BoxView CreateHorizontalLine()
@@ -280,8 +335,10 @@ namespace DataGridSam.Utils
             var line = new BoxView()
             {
                 BackgroundColor = DataGrid.BorderColor,
-                VerticalOptions = LayoutOptions.FillAndExpand,
-                HorizontalOptions = LayoutOptions.FillAndExpand,
+                VerticalOptions = LayoutOptions.End,
+                HorizontalOptions = LayoutOptions.Fill,
+                HeightRequest = DataGrid.BorderWidth,
+                InputTransparent = true,
             };
             return line;
         }
@@ -291,8 +348,8 @@ namespace DataGridSam.Utils
             var line = new BoxView()
             {
                 BackgroundColor = Color.Transparent,
-                VerticalOptions = LayoutOptions.FillAndExpand,
-                HorizontalOptions = LayoutOptions.FillAndExpand,
+                VerticalOptions = LayoutOptions.Fill,
+                HorizontalOptions = LayoutOptions.Fill,
                 InputTransparent = true,
             };
             return line;

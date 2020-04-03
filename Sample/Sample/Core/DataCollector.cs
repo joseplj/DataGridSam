@@ -150,7 +150,7 @@ namespace Sample.Core
                 },
                 new Ware
                 {
-                    Name = "Toaster oven kaj-B",
+                    Name = "Toaster",
                     Price = 87.4f,
                     Weight = 0.0f,
                     Need = 150,

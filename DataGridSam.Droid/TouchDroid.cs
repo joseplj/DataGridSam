@@ -6,6 +6,7 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 using DataGridSam.Platform;
+using DataGridSam.Utils;
 using System;
 using System.ComponentModel;
 using Xamarin.Forms.Platform.Android;
@@ -28,6 +29,7 @@ namespace DataGridSam.Droid
         private RippleDrawable ripple;
         private bool isEnabled;
 
+        private Row Row => ((TouchBox)Element).Row;
         public bool EnableRipple => Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop;
         public View View => Control ?? Container;
         public bool IsDisposed => (Container as IVisualElementRenderer)?.Element == null;
@@ -189,7 +191,7 @@ namespace DataGridSam.Droid
         private void SelectHandler()
         {
             var cmd = Touch.GetSelect(Element);
-            cmd.Execute(Element.BindingContext);
+            cmd.Execute(Row.Context);
         }
 
         private void ClickHandler()
@@ -198,8 +200,8 @@ namespace DataGridSam.Droid
             if (cmd == null)
                 return;
 
-            if (cmd.CanExecute(Element.BindingContext))
-                cmd.Execute(Element.BindingContext);
+            if (cmd.CanExecute(Row.Context))
+                cmd.Execute(Row.Context);
         }
 
         private void LongClickHandler()
@@ -213,8 +215,8 @@ namespace DataGridSam.Droid
                 return;
             }
 
-            if (cmdLong.CanExecute(Element.BindingContext))
-                cmdLong.Execute(Element.BindingContext);
+            if (cmdLong.CanExecute(Row.Context))
+                cmdLong.Execute(Row.Context);
         }
 
         #region TouchPart

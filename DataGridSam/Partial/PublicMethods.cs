@@ -16,7 +16,7 @@ namespace DataGridSam
                 id = bodyGrid.Rows.Count - 1;
 
             var element = bodyGrid.Rows[id];
-            mainScroll.ScrollToAsync(element, ScrollToPosition.MakeVisible, isAnimated);
+            mainScroll.ScrollToAsync(element.touchContainer, ScrollToPosition.MakeVisible, isAnimated);
         }
 
         public async Task ScrollToElementAsync(int id, bool isAnimated)
@@ -27,7 +27,7 @@ namespace DataGridSam
                 id = bodyGrid.Rows.Count - 1;
 
             var element = bodyGrid.Rows[id];
-            await mainScroll.ScrollToAsync(element, ScrollToPosition.MakeVisible, isAnimated);
+            await mainScroll.ScrollToAsync(element.touchContainer, ScrollToPosition.MakeVisible, isAnimated);
         }
     }
 }

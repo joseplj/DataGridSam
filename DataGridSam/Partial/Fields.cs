@@ -15,6 +15,7 @@ namespace DataGridSam
         /// </summary>
         internal ScrollView mainScroll;
 
+        [Obsolete("Use bodyGrid.Mask")]
         /// <summary>
         /// For imitate column borders (BODY)
         /// </summary>

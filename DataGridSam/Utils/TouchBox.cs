@@ -5,11 +5,12 @@ using Xamarin.Forms;
 
 namespace DataGridSam.Utils
 {
-    public class ScrollGrid : ScrollView
+    public class TouchBox : BoxView
     {
-        public ScrollGrid()
+        public readonly Row Row;
+        public TouchBox(Row row)
         {
-            VerticalOptions = LayoutOptions.StartAndExpand;
+            Row = row;
         }
     }
 }

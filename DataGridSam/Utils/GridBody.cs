@@ -8,18 +8,29 @@ using Xamarin.Forms;
 
 namespace DataGridSam.Utils
 {
-    internal class GridBody : Grid
+    public class GridBody : Grid
     {
         internal bool HasItems;
         internal int ItemsCount;
         internal DataGrid DataGrid;
+        internal Grid Mask;
         internal List<Row> Rows;
 
         public GridBody(DataGrid host)
         {
+            this.
+            BackgroundColor = Color.Red;
             DataGrid = host;
             Rows = new List<Row>();
-            VerticalOptions = LayoutOptions.Start;
+
+            Mask = new Grid();
+            Mask.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+            Mask.ColumnSpacing = 0;
+            Mask.BackgroundColor = Color.Transparent;
+            Mask.InputTransparent = true;
+            Children.Add(Mask);
+
+            VerticalOptions = LayoutOptions.StartAndExpand;
             RowSpacing = 0;
             ColumnSpacing = 0;
         }
@@ -34,6 +45,47 @@ namespace DataGridSam.Utils
         {
             get { return (IEnumerable)GetValue(ItemsSourceProperty); }
             set { SetValue(ItemsSourceProperty, value); }
+        }
+
+        internal void Init()
+        {
+            RowDefinitions.Clear();
+            ColumnDefinitions.Clear();
+
+            // Init mask
+            Mask.Children.Clear();
+            Mask.ColumnDefinitions.Clear();
+
+            if (DataGrid.Columns == null)
+                return;
+
+            // Create vertical borders (Table)
+            int i = 0;
+            foreach (var col in DataGrid.Columns)
+            {
+                ColumnDefinitions.Add(new ColumnDefinition { Width = col.CalcWidth });
+                Mask.ColumnDefinitions.Add(new ColumnDefinition { Width = col.CalcWidth });
+
+                if (i < DataGrid.Columns.Count - 1)
+                {
+                    var line = new BoxView
+                    {
+                        WidthRequest = DataGrid.BorderWidth,
+                        VerticalOptions = LayoutOptions.FillAndExpand,
+                        HorizontalOptions = LayoutOptions.EndAndExpand,
+                        BackgroundColor = DataGrid.BorderColor,
+                        TranslationX = DataGrid.BorderWidth,
+                    };
+                    Grid.SetColumn(line, i);
+                    Grid.SetRow(line, 0);
+                    Mask.Children.Add(line);
+                }
+
+                i++;
+            }
+            //
+
+            UpdateMask();
         }
 
         private static void ItemsChanged(BindableObject bindable, object oldValue, object newValue)
@@ -107,8 +159,7 @@ namespace DataGridSam.Utils
             if (e.Action == NotifyCollectionChangedAction.Replace)
             {
                 var del = Rows[e.OldStartingIndex];
-                Rows.Remove(del);
-                Children.Remove(del);
+                del.Remove();
 
                 var item = e.NewItems[e.NewStartingIndex];
                 var row = CreateRowInsert(item, this, e.NewStartingIndex, ItemsCount);
@@ -199,8 +250,7 @@ namespace DataGridSam.Utils
                 int del = e.OldStartingIndex;
                 bool isLast = (del == ItemsCount);
                 var delRow = Rows[del];
-                Rows.Remove(delRow);
-                Children.Remove(delRow);
+                delRow.Remove();
 
                 // hide last line
                 if (isLast)
@@ -257,22 +307,18 @@ namespace DataGridSam.Utils
 
         private static Row CreateRowAdd(object bindItem, GridBody host, int index, int itemsCount)
         {
-            var row = new Row(bindItem, host.DataGrid, index, itemsCount);
-
-            Grid.SetRow(row, index);
             host.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            host.Children.Add(row);
+
+            var row = new Row(bindItem, host, index, itemsCount);
             host.Rows.Add(row);
+            //host.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0) });
 
             return row;
         }
 
         private static Row CreateRowInsert(object bindItem, GridBody host, int index, int itemsCount)
         {
-            var row = new Row(bindItem, host.DataGrid, index, itemsCount);
-
-            Grid.SetRow(row, index);
-            host.Children.Add(row);
+            var row = new Row(bindItem, host, index, itemsCount);
             host.Rows.Insert(index, row);
 
             return row;
@@ -281,7 +327,7 @@ namespace DataGridSam.Utils
         private void ClearRows()
         {
             foreach (var row in Rows)
-                Children.Remove(row);
+                row.Remove();
 
             Rows.Clear();
             RowDefinitions.Clear();
@@ -294,7 +340,7 @@ namespace DataGridSam.Utils
             int i = 0;
             foreach (var row in Rows)
             {
-                Grid.SetRow(row, i);
+                row.UpdatePosition(i);
                 i++;
             }
 
@@ -303,9 +349,17 @@ namespace DataGridSam.Utils
 
         private void UpdateMask()
         {
-            var mask = DataGrid.maskGrid;
-            Grid.SetRowSpan(mask, Rows.Count);
-            RaiseChild(mask);
+            int rCount = Rows.Count;
+            if (rCount == 0)
+                rCount = 1;
+
+            int cCount = DataGrid.Columns.Count;
+            if (cCount == 0)
+                cCount = 1;
+
+            Grid.SetRowSpan(Mask, rCount);
+            Grid.SetColumnSpan(Mask, cCount);
+            RaiseChild(Mask);
         }
     }
 }
